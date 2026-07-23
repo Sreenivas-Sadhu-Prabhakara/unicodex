@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'">
+  <title>unicodex — unicode character inspector: codepoints, bytes, invisible characters</title>
+  <meta name="description" content="A unicode character inspector that breaks any pasted text into grapheme clusters, codepoints and UTF-8/UTF-16 bytes, diffs NFC/NFD/NFKC/NFKD, and flags invisible and look-alike characters — entirely in your browser.">
+  <meta name="color-scheme" content="dark light">
+  <link rel="canonical" href="https://sreenivas-sadhu-prabhakara.github.io/unicodex/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="author" content="Sreenivas Sadhu Prabhakara">
+  <meta name="keywords" content="unicode character inspector, invisible character detector, zero width space, string length wrong, unicode normalization NFC NFD, grapheme cluster, UTF-8 bytes, trojan source, confusable characters, codepoint viewer">
+  <meta name="theme-color" content="#0B0C0C" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F1F6F2" media="(prefers-color-scheme: light)">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="unicodex">
+  <meta property="og:title" content="unicodex — unicode character inspector: codepoints, bytes, invisible characters">
+  <meta property="og:description" content="Paste anything — every codepoint, byte and invisible character revealed, plus a straight answer to why your string length is wrong. Nothing you paste ever leaves this browser.">
+  <meta property="og:url" content="https://sreenivas-sadhu-prabhakara.github.io/unicodex/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://sreenivas-sadhu-prabhakara.github.io/unicodex/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="unicodex — the invisible character in café, revealed in a dashed mint box">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="unicodex — unicode character inspector: codepoints, bytes, invisible characters">
+  <meta name="twitter:description" content="Paste anything — every codepoint, byte and invisible character revealed, plus a straight answer to why your string length is wrong. Nothing you paste ever leaves this browser.">
+  <meta name="twitter:image" content="https://sreenivas-sadhu-prabhakara.github.io/unicodex/og-image.png">
+  <meta name="twitter:image:alt" content="unicodex — the invisible character in café, revealed in a dashed mint box">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+
+  <!-- Structured data (data blocks; not affected by script-src) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "unicodex",
+    "description": "A unicode character inspector that breaks any pasted text into grapheme clusters, codepoints and UTF-8/UTF-16 bytes, diffs its NFC/NFD/NFKC/NFKD normalization forms, and flags invisible or deceptive characters — with the browser engine itself as ground truth. Runs 100% offline; pasted text never leaves the browser.",
+    "url": "https://sreenivas-sadhu-prabhakara.github.io/unicodex/",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any (modern web browser)",
+    "browserRequirements": "Requires a modern web browser with JavaScript and Intl.Segmenter.",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "license": "https://opensource.org/licenses/MIT",
+    "author": { "@type": "Person", "name": "Sreenivas Sadhu Prabhakara" },
+    "softwareVersion": "0.1.0",
+    "featureList": [
+      "Per-grapheme-cluster inspector with codepoints, UTF-8 and UTF-16 bytes",
+      "Four counts: grapheme clusters vs .length vs codepoints vs UTF-8 bytes",
+      "NFC/NFD/NFKC/NFKD normalization diff with per-form copy",
+      "Invisible and look-alike character detector with cited catalog (~70 entries)",
+      "A/B compare: raw-equal, NFC-equal, first divergent codepoint",
+      "Mechanical clean-copy with emoji/Indic joiner exemptions",
+      "Copy-as escapes: JavaScript, JSON, HTML, Python",
+      "Runs 100% offline; CSP blocks all network access"
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why is my string length wrong in JavaScript?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JavaScript's .length counts UTF-16 code units, not what you see. One family emoji is 1 visible glyph but 7 codepoints, 11 UTF-16 units and 25 UTF-8 bytes. unicodex shows all four counts side by side, with which tools count which, so the mismatch stops being a mystery."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why don't two identical-looking strings match?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Usually one of three causes: different normalization forms (a precomposed é vs e plus a combining accent), invisible characters (zero-width spaces, bidi controls, no-break spaces), or look-alike letters such as Cyrillic а standing in for Latin a. unicodex's compare mode reports raw-equal, NFC-equal and the first divergent codepoint, and flags the characters that explain a visual match that isn't a real match."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I find invisible characters in pasted text?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Paste the text into unicodex. Every flagged character — zero-width spaces, byte-order marks, bidi controls, look-alike spaces, line separators — is revealed inline in a dashed box with its abbreviation, plus its Unicode name, a one-line risk note and a citation to the Unicode document that defines it."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does unicodex upload or store the text I paste?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. unicodex runs entirely in your browser with a Content-Security-Policy of connect-src 'none' — the browser itself blocks any network request, so 'pasted text never leaves this browser' is enforced, not promised. Optional autosave keeps your last input in this browser's localStorage only, and one tap clears it."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#paste">Skip to the inspector</a>
+
+  <header class="hero">
+    <div class="wrap hero__bar">
+      <div class="brand" aria-hidden="true">
+        <svg class="brand__mark" viewBox="0 0 32 32" role="presentation">
+          <rect x="5" y="5" width="22" height="22" rx="6" fill="none" stroke="var(--mint)" stroke-width="2" stroke-dasharray="4.6 3.4" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="3" fill="var(--mint)"/>
+        </svg>
+        <span class="brand__word">unicodex</span>
+      </div>
+      <button type="button" id="theme-toggle" class="btn btn--ghost" aria-pressed="false">Light theme</button>
+    </div>
+    <div class="wrap">
+      <h1 class="hero__title">Unicode Character Inspector — Codepoints, Bytes, Invisible-Character Detector &amp; Normalization Diff</h1>
+      <p class="hero__lede">
+        Paste anything. unicodex breaks it into grapheme clusters, codepoints and UTF-8/UTF-16 bytes,
+        diffs its four normalization forms, and reveals every
+        <span class="reveal reveal--demo">ZWSP</span> invisible or deceptive character — with the browser
+        engine itself as ground truth, so <em>"why is my string length wrong?"</em> finally gets a straight answer.
+      </p>
+      <p class="privacy-banner">
+        <strong>Private by construction:</strong> this page ships a Content-Security-Policy of
+        <code>connect-src 'none'</code> — the browser itself blocks any network request.
+        Nothing you paste ever leaves this browser; that is enforced, not promised.
+      </p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ============ INPUT ============ -->
+    <section class="panel" aria-labelledby="input-h">
+      <h2 id="input-h">Inspect text</h2>
+      <label class="field-label" for="paste">Paste or type anything</label>
+      <textarea id="paste" rows="4" spellcheck="false" autocomplete="off"
+        placeholder="Paste text here — try a sample below"></textarea>
+      <div class="input-tools">
+        <div class="samples" id="samples" role="group" aria-label="Sample gallery — 10 demo strings">
+          <span class="samples__label">Samples:</span>
+          <!-- sample chips injected by app.js -->
+        </div>
+        <div class="input-settings">
+          <label class="toggle">
+            <input type="checkbox" id="autosave"> <span>Autosave input in this browser</span>
+          </label>
+          <button type="button" id="clear-saved" class="btn btn--ghost">Clear saved input</button>
+        </div>
+      </div>
+      <p class="sample-teaches" id="sample-teaches" aria-live="polite"></p>
+
+      <!-- counts strip -->
+      <div class="counts" role="group" aria-label="Character counts">
+        <div class="count-card">
+          <output class="count-card__num" id="count-graphemes" aria-live="polite">0</output>
+          <span class="count-card__name">grapheme clusters</span>
+          <span class="count-card__note">what you see · Intl.Segmenter · cursor steps</span>
+        </div>
+        <div class="count-card">
+          <output class="count-card__num" id="count-utf16" aria-live="polite">0</output>
+          <span class="count-card__name">UTF-16 units</span>
+          <span class="count-card__note">JS <code>.length</code> · Java/C# length · DOM APIs</span>
+        </div>
+        <div class="count-card">
+          <output class="count-card__num" id="count-codepoints" aria-live="polite">0</output>
+          <span class="count-card__name">codepoints</span>
+          <span class="count-card__note">Python 3 <code>len()</code> · Rust <code>chars().count()</code></span>
+        </div>
+        <div class="count-card">
+          <output class="count-card__num" id="count-utf8" aria-live="polite">0</output>
+          <span class="count-card__name">UTF-8 bytes</span>
+          <span class="count-card__note">on the wire · Go <code>len()</code> · DB storage/limits</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CLUSTER INSPECTOR ============ -->
+    <section class="panel" aria-labelledby="clusters-h">
+      <h2 id="clusters-h">Cluster by cluster</h2>
+      <p class="hint">Each card is one grapheme cluster — one "character" as you see it. Flagged characters
+        appear as dashed reveal boxes. Select a card for bytes, class chips and copy-as escapes.</p>
+      <div id="clusters" class="clusters"></div>
+      <p id="clusters-capped" class="hint hint--warn" hidden></p>
+      <div id="detail" class="detail" hidden>
+        <h3 id="detail-title">Cluster detail</h3>
+        <div id="detail-body"></div>
+      </div>
+    </section>
+
+    <!-- ============ WARNINGS ============ -->
+    <section class="panel" aria-labelledby="warnings-h">
+      <h2 id="warnings-h">Flagged characters</h2>
+      <p class="hint">Scanned against a hand-verified catalog of <span id="catalog-size">~70</span> risky characters
+        (zero-width, bidi/Trojan&nbsp;Source, look-alike spaces, line separators, confusables). Every entry cites the
+        Unicode document that defines it. <strong>Absence of a warning is not a "safe" verdict</strong> — the
+        confusable list is a curated subset of UTS&nbsp;#39.</p>
+      <div id="warnings" aria-live="polite"></div>
+    </section>
+
+    <!-- ============ NORMALIZATION ============ -->
+    <section class="panel" aria-labelledby="norm-h">
+      <h2 id="norm-h">Normalization diff — NFC · NFD · NFKC · NFKD</h2>
+      <p class="hint">Computed by this browser's <code>String.normalize</code> (UAX&nbsp;#15). "changed" means the
+        form differs from your input; unstable clusters are marked.</p>
+      <div id="norm"></div>
+    </section>
+
+    <!-- ============ COMPARE ============ -->
+    <section class="panel" aria-labelledby="compare-h">
+      <h2 id="compare-h">Compare two strings</h2>
+      <p class="hint">For "these look identical but don't match" bugs: raw equality, NFC equality, the first
+        divergent codepoint, and any flagged characters that explain a visual match that isn't a real match.</p>
+      <div class="compare-grid">
+        <label class="field-label" for="cmp-a">String A</label>
+        <label class="field-label" for="cmp-b">String B</label>
+        <textarea id="cmp-a" rows="2" spellcheck="false" autocomplete="off" placeholder="paypal"></textarea>
+        <textarea id="cmp-b" rows="2" spellcheck="false" autocomplete="off" placeholder="раypal"></textarea>
+      </div>
+      <div id="cmp-verdicts" aria-live="polite"></div>
+    </section>
+
+    <!-- ============ CLEAN COPY ============ -->
+    <section class="panel" aria-labelledby="clean-h">
+      <h2 id="clean-h">Clean copy</h2>
+      <p class="hint">Mechanical, per-category fixes only — each toggle states exactly what it replaces, every pass is
+        idempotent by test, and nothing here guesses intent or repairs encoding damage (mojibake).</p>
+      <div class="clean-opts">
+        <label class="toggle"><input type="checkbox" id="opt-zw" checked>
+          <span><strong>Strip zero-width &amp; format characters</strong> — removes ZWSP, WJ, BOM, SHY, CGJ, the four
+          invisible math operators and tag characters. <em>Keeps</em> emoji-sequence ZWJ, ZWNJ between letters
+          (required in Hindi/Persian) and variation selectors.</span></label>
+        <label class="toggle toggle--sub"><input type="checkbox" id="opt-alljoiners">
+          <span><strong>…strip all, including emoji/Indic joiners</strong> — also removes every ZWJ, ZWNJ and
+          variation selector (decomposes 👨‍👩‍👧‍👦 into four emoji; corrupts Hindi/Persian orthography).</span></label>
+        <label class="toggle"><input type="checkbox" id="opt-sp" checked>
+          <span><strong>Look-alike spaces → ASCII space</strong> — replaces the 16 flagged spaces (NBSP, NNBSP, thin,
+          ideographic…) with U+0020.</span></label>
+        <label class="toggle"><input type="checkbox" id="opt-bidi" checked>
+          <span><strong>Strip bidi controls</strong> — removes all 12 directional formatting characters
+          (LRE…PDI, LRM, RLM, ALM).</span></label>
+        <label class="toggle"><input type="checkbox" id="opt-nfc" checked>
+          <span><strong>Apply NFC</strong> — canonical composition via <code>String.normalize('NFC')</code>.</span></label>
+      </div>
+      <p id="clean-stats" class="clean-stats" aria-live="polite"></p>
+      <label class="field-label" for="clean-out">Cleaned result</label>
+      <textarea id="clean-out" rows="3" readonly></textarea>
+      <div class="row-actions">
+        <button type="button" id="copy-clean" class="btn">Copy cleaned text</button>
+        <span id="copy-status" class="copy-status" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <!-- ============ HONEST LIMITS ============ -->
+    <section class="panel panel--limits" aria-labelledby="limits-h">
+      <h2 id="limits-h">Honest limits</h2>
+      <ul class="limits">
+        <li>Cluster counts follow <strong>this browser's</strong> <code>Intl.Segmenter</code> and its Unicode version —
+          e.g. Devanagari conjuncts (नमस्ते) can segment differently on older engines. unicodex reports the host
+          engine's answer; its self-tests pin only version-stable fixtures.</li>
+        <li><strong>No name database:</strong> arbitrary codepoints show <code>U+hex</code> plus engine-derived class
+          chips, not the official Unicode name. Names appear only for the ~70 flagged catalog entries.</li>
+        <li>Confusable flags are a curated ~24-letter subset of UTS&nbsp;#39 — <strong>absence of a warning is not
+          proof a string is safe</strong>, and unicodex never says "safe".</li>
+        <li>Rendering varies by device fonts — a cluster shown here may draw as tofu or differently elsewhere.
+          unicodex inspects what text <em>is</em>, not how any device draws it.</li>
+        <li>Clean-copy performs only the listed mechanical replacements; it never guesses intent and cannot repair
+          encoding damage (mojibake).</li>
+        <li>Autosaved input lives in this browser's localStorage (toggleable, one-tap clear); clearing site data
+          erases it. Nothing is ever transmitted — enforced by CSP <code>connect-src 'none'</code>.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p class="footer__disclaimer">
+        <strong>Disclaimer:</strong> unicodex is an informational developer tool, provided under the MIT License
+        "as is", without warranty of any kind. It flags characters from a hand-verified catalog (sources verified
+        2026-07-23 against the Unicode Character Database, UAX&nbsp;#9, UAX&nbsp;#15, UAX&nbsp;#29, UTS&nbsp;#39 and
+        the staged copies in this repository) but never issues a security verdict — do not treat the absence of a
+        warning as proof that text is safe. Counts and normalization come from your browser's engine and can differ
+        across engines and Unicode versions.
+      </p>
+      <p class="footer__meta">
+        <a href="https://github.com/Sreenivas-Sadhu-Prabhakara/unicodex">Source &amp; catalog citations on GitHub</a>
+        · MIT © 2026 Sreenivas Sadhu Prabhakara ·
+        catalog verified 2026-07-23 ·
+        <a href="https://www.unicode.org/reports/tr15/">UAX&nbsp;#15</a> ·
+        <a href="https://www.unicode.org/reports/tr29/">UAX&nbsp;#29</a> ·
+        <a href="https://www.unicode.org/reports/tr39/">UTS&nbsp;#39</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="data/flagged.js"></script>
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0B0C0C; }
+  body { display: grid; place-items: center; }
+  /* 12% safe padding each side -> mark fills the middle 76vmin */
+  .mark { width: 76vmin; height: 76vmin; display: block; }
+</style>
+</head>
+<body>
+  <!-- the reveal box: a dashed phosphor-mint rounded rectangle with a centred dot -->
+  <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+    <rect x="4" y="4" width="24" height="24" rx="6.5" fill="none" stroke="#56E8A4" stroke-width="2.4" stroke-dasharray="5.1 3.75" stroke-linecap="round"/>
+    <circle cx="16" cy="16" r="3.4" fill="#56E8A4"/>
+  </svg>
+</body>
+</html>

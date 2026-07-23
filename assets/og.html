@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  /* rendered locally to og-image.png — never served under the CSP */
+  :root {
+    --ground: #0B0C0C;
+    --panel:  #121514;
+    --line:   #262B29;
+    --text:   #E7ECE9;
+    --muted:  #A9B3AD;
+    --mint:   #56E8A4;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+  .frame {
+    position: absolute; inset: 0;
+    padding: 72px 84px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 20px; }
+  .mark { width: 74px; height: 74px; }
+  .wordmark { font-family: var(--mono); font-size: 58px; font-weight: 700; letter-spacing: -0.02em; }
+
+  /* the demo: café with its invisible character revealed */
+  .demo {
+    font-family: var(--mono);
+    font-size: 148px; font-weight: 700; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .reveal {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 44px; font-weight: 700; color: var(--mint);
+    border: 4px dashed var(--mint); border-radius: 18px;
+    background: rgba(86, 232, 164, 0.13);
+    padding: 30px 26px; margin: 0 14px;
+  }
+  .tagline {
+    margin-top: 34px;
+    font-size: 33px; font-weight: 500; color: var(--muted);
+    max-width: 30ch; line-height: 1.35;
+  }
+  .tagline strong { color: var(--text); font-weight: 700; }
+  .chips { display: flex; gap: 14px; }
+  .chip {
+    font-family: var(--mono);
+    font-size: 22px; font-weight: 600; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px;
+    background: var(--panel);
+    padding: 12px 22px;
+  }
+  .chip--mint { color: var(--mint); border-color: var(--mint); }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="7" fill="#121514"/>
+        <rect x="5.5" y="5.5" width="21" height="21" rx="6" fill="none" stroke="#56E8A4" stroke-width="2" stroke-dasharray="4.6 3.4" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="3" fill="#56E8A4"/>
+      </svg>
+      <span class="wordmark">unicodex</span>
+    </div>
+
+    <div>
+      <div class="demo">ca<span class="reveal">ZWSP</span>fé</div>
+      <p class="tagline"><strong>Paste anything.</strong> Every codepoint, byte and invisible character — revealed.</p>
+    </div>
+
+    <div class="chips">
+      <span class="chip">graphemes ≠ .length</span>
+      <span class="chip">NFC / NFD diff</span>
+      <span class="chip chip--mint">nothing leaves this browser</span>
+    </div>
+  </div>
+</body>
+</html>
