@@ -38,9 +38,9 @@ html[data-theme="light"] {
   --line:    #C9D4CD;
   --text:    #152019;
   --muted:   #45524B;
-  --mint:    #0C7A4B;
+  --mint:    #0A6B42; /* deepened from #0C7A4B: mint text on mint-dim-over-ground was 4.32:1; now 5.20:1 (AA) */
   --mint-ink:#FFFFFF;
-  --mint-dim: rgba(12, 122, 75, 0.10);
+  --mint-dim: rgba(10, 107, 66, 0.10);
   --warn:    #8A5A00;
   --warn-dim: rgba(138, 90, 0, 0.10);
   --bad:     #B03A20;
